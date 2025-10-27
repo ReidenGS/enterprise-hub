@@ -1,0 +1,70 @@
+# =============================
+# Python & Django
+# =============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django static & media files
+/static/
+staticfiles/
+media/
+*.log
+
+# Local database
+db.sqlite3
+
+# Django secret environment files
+.env
+.env.local
+*.env
+/secrets.json
+
+# =============================
+# Virtual Environment
+# =============================
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# =============================
+# IDE & Editor Configs
+# =============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# =============================
+# OS Files
+# =============================
+.DS_Store
+Thumbs.db
+
+# =============================
+# Build & Distribution
+# =============================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =============================
+# Jupyter / temp
+# =============================
+.ipynb_checkpoints/
+*.ipynb
+__pycache__/
+
+# =============================
+# Optional: coverage / test reports
+# =============================
+.coverage
+coverage.xml
+*.cover
+.pytest_cache/
+htmlcov/
