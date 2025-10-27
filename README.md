@@ -131,9 +131,9 @@ This project is licensed under the **MIT License** — free to view and learn fr
 
 ## 👤 Author / 作者
 
-**jk wen**
-📧 [your.email@example.com](mailto:your.email@example.com)
-🌐 [GitHub Profile](https://github.com/yourusername)
+**Junkun Wen**
+📧 [jw9697@nyu.edu](mailto:jw9697@nyu.edu)
+🌐 [GitHub Profile](https://github.com/ReidenGS)
 
 ---
 
