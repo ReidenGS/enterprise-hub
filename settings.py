@@ -138,9 +138,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT = os.path.join(BASE_DIR,"media")
 MEDIA_URL = "/media/"
 
-WX_APPID ='wx513283f1e95c9b24'
-WX_APPSECRET = 'e8e97e430ddd7aa9159d2483d13fb0cc'
-WX_TEMPLATE_ID = "Q76qJL57pXYQnjpylIThYtRttxEm8FnfHAdCJhiwQeA"
+WECHAT_APPID = os.getenv("WECHAT_APPID")
+WECHAT_SECRET = os.getenv("WECHAT_SECRET")
+WX_TEMPLATE_ID = os.getenv("WX_TEMPLATE_ID")
+SELLS_ADMIN_PASSWORD = os.getenv("SELLS_ADMIN_PASSWORD")
 
 
 url_ROOT = 'http://47.106.82.115'
@@ -152,3 +153,4 @@ REST_FRAMEWORK={
 
 
 }
+
