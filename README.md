@@ -43,6 +43,7 @@ MySQL / PostgreSQL Database
   管理报修单、分配人员、关闭任务。
 * View, edit, and export visit and sales records.
   查看、编辑并导出销售拜访记录。
+* Generate annual and monthly reports and Word export supported(This function has not yet been deployed to the cloud).生成年度/月度报告（该功能尚且没有部署到云端）。
 * Perform automated employee attendance data cleaning and validation.
   自动清洗与校验员工考勤数据。
 * Entire admin interface is built in **Chinese** using Django templates.
@@ -117,6 +118,22 @@ The backend and admin interface are deployed on **Alibaba Cloud ECS** using **Ng
 Login account / 用户账号 ： test
 
 password / 密码 ：test
+
+## 🧹 Data Cleaning Feature / 数据清洗功能使用说明
+
+The data cleaning feature automatically processes employee attendance records from Excel files, detects missing punches, and highlights anomalies.该功能可自动处理员工考勤数据，检测缺勤与异常记录，并生成清洗后的文件。
+
+### 📋 Steps / 使用步骤
+
+* Download Example Excel FileGo to the GitHub repository root and download the file named attendance_example.xlsx.在 GitHub 项目根目录下载名为 attendance_example.xlsx 的示例文件。
+
+* Open the Data Cleaning PageLog in to the Django admin interface and navigate to the “数据清洗” page.登录 Django 管理端，进入 “数据清洗” 页面。
+
+* Drag File into Blue Upload BoxDrag and drop the downloaded Excel file into the blue upload box on the page.将下载的 Excel 文件拖入页面中蓝色的上传框。
+
+* Automatic ProcessingThe system will automatically read, clean, and process the data — identifying missing or duplicate attendance records.系统将自动读取并清洗数据，检测缺勤、重复打卡等问题。
+
+* Download Cleaned FileOnce completed, the browser will automatically download the processed file, containing all results with highlighted anomalies (e.g., red-marked cells).清洗完成后，浏览器会自动下载处理后的文件，异常项会以红色高亮显示。
 
 🔗 [Demo of the data cleaning on Alibaba Cloud / 员工考情数据清洗阿里云演示链接](https://szjysk.xyz/attendance_info/)
 
