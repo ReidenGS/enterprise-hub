@@ -43,8 +43,6 @@ MySQL / PostgreSQL Database
   管理报修单、分配人员、关闭任务。
 * View, edit, and export visit and sales records.
   查看、编辑并导出销售拜访记录。
-* Generate annual and monthly reports (Word export supported).
-  生成年度/月度报告（支持 Word 导出）。
 * Perform automated employee attendance data cleaning and validation.
   自动清洗与校验员工考勤数据。
 * Entire admin interface is built in **Chinese** using Django templates.
@@ -114,8 +112,13 @@ The backend and admin interface are deployed on **Alibaba Cloud ECS** using **Ng
 * Collect static files via `collectstatic`. / 使用 collectstatic 收集静态文件
 * Store `.env` securely with sensitive data. / 安全存放环境变量文件 `.env`
 
-🔗 [Demo on Alibaba Cloud / 阿里云演示链接](https://szjysk.xyz)
-*(Replace with your actual deployed URL / 请替换为真实部署地址)*
+🔗 [Demo of the repair backend system on Alibaba Cloud / 报修后台系统阿里云演示链接](https://szjysk.xyz)
+
+Login account / 用户账号 ： test
+
+password / 密码 ：test
+
+🔗 [Demo of the data cleaning on Alibaba Cloud / 员工考情数据清洗阿里云演示链接](https://szjysk.xyz/attendance_info/)
 
 ---
 
