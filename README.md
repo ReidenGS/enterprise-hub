@@ -57,10 +57,7 @@ You can directly access the deployed Mini Program from WeChat:
 您可直接在微信中搜索并体验已上线的小程序：
 
 **Mini Program Name / 小程序名称：** `景曜服务`
-**Search Method / 搜索方式：** 打开微信 → 搜索框输入 “景曜服务”
-
-📸 *(Optional: Add QR Code Image Here)*
-可在此处插入小程序二维码截图，方便扫码访问。
+**Search Method / 搜索方式：** open Wechat -> search the name:"景曜服务"  打开微信 → 搜索框输入 “景曜服务”
 
 The Mini Program connects in real time to the Django backend hosted on Alibaba Cloud.
 小程序实时调用部署在阿里云上的 Django 后端 API。
