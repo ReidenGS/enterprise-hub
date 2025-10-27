@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考勤文件处理工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top to give some space */
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 600;
+        }
+        .file-input-wrapper {
+            margin-bottom: 25px;
+            border: 2px dashed #a8dadc;
+            padding: 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .file-input-wrapper:hover {
+            background-color: #f0f8ff;
+            border-color: #457b9d;
+        }
+        .file-input-wrapper input[type="file"] {
+            display: none; /* 隐藏原始文件输入框 */
+        }
+        .file-input-wrapper label {
+            display: block;
+            color: #457b9d;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        #fileNameDisplay {
+            margin-top: 15px;
+            font-size: 0.95em;
+            color: #666;
+            min-height: 20px; /* Prevent layout shift */
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            width: 100%;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #statusMessage {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none; /* 默认隐藏 */
+            animation: fadeIn 0.5s ease-out;
+        }
+        #statusMessage.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        #statusMessage.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #statusMessage.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>考勤文件处理工具</h1>
+        <p>请上传您的考勤Excel文件 .xlsx 或 .CSV 文件。</p>
+
+        <div class="file-input-wrapper" onclick="document.getElementById('excelFile').click()">
+            <input type="file" id="excelFile" accept=".xlsx,.csv">
+            <label for="excelFile">点击选择文件</label>
+            <div id="fileNameDisplay">未选择文件</div>
+        </div>
+
+        <button id="uploadButton">上传并处理</button>
+
+        <div id="statusMessage"></div>
+    </div>
+
+    <script>
+        const excelFileInput = document.getElementById('excelFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const uploadButton = document.getElementById('uploadButton');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Django 接口的 URL，请务必修改为你的实际接口地址
+        const API_URL = 'http://127.0.0.1:8000/attendance_info/'; // 替换为你的 Django 接口地址
+
+        // 更新文件名称显示
+        excelFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileNameDisplay.textContent = `已选择文件: ${this.files[0].name}`;
+            } else {
+                fileNameDisplay.textContent = '未选择文件';
+            }
+            // 每次选择新文件时，清空之前的状态消息
+            clearStatus();
+        });
+
+        // 上传按钮点击事件
+        uploadButton.addEventListener('click', async function() {
+            const file = excelFileInput.files[0];
+
+            if (!file) {
+                showStatus('error', '请先选择一个文件！');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('excel_file', file); // 这里的 'excel_file' 必须与 Django 视图中 request.FILES 的键名一致！
+
+            uploadButton.disabled = true; // 禁用按钮，防止重复点击
+            showStatus('loading', '文件上传中，请稍候...');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData,
+                    // Django REST Framework通常不需要手动设置Content-Type，浏览器会自动设置 multipart/form-data
+                });
+
+                if (response.ok) {
+                    // 如果响应成功，说明文件已生成并可下载
+                    // 获取文件名 Content-Disposition 头部
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = '考勤报告.xlsx'; // 默认文件名
+                    if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
+                        // 从 Content-Disposition 中提取文件名
+                        filename = contentDisposition.split('filename=')[1].split(';')[0].replace(/"/g, '');
+                    }
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename; // 设置下载文件名
+                    document.body.appendChild(a);
+                    a.click(); // 模拟点击下载
+                    a.remove(); // 移除临时a标签
+                    window.URL.revokeObjectURL(url); // 释放URL对象
+
+                    showStatus('success', '文件处理成功，已开始下载！');
+                } else {
+                    // 服务器返回错误
+                    const errorData = await response.json();
+                    showStatus('error', `处理失败: ${errorData.message || '未知错误'}`);
+                }
+            } catch (error) {
+                // 网络或其他JS错误
+                showStatus('error', `请求失败，请检查网络或服务器状态: ${error.message}`);
+            } finally {
+                uploadButton.disabled = false; // 重新启用按钮
+                excelFileInput.value = ''; // 清空文件选择，以便用户再次上传相同文件
+                fileNameDisplay.textContent = '未选择文件'; // 重置文件显示
+            }
+        });
+
+        // 显示状态消息的辅助函数
+        function showStatus(type, message) {
+            statusMessage.className = ''; // 清除所有现有类
+            statusMessage.classList.add(type); // 添加类型类 (success, error, loading)
+            statusMessage.textContent = message;
+            statusMessage.style.display = 'block'; // 显示消息
+        }
+
+        // 清空状态消息的辅助函数
+        function clearStatus() {
+            statusMessage.style.display = 'none';
+            statusMessage.textContent = '';
+            statusMessage.className = '';
+        }
+    </script>
+</body>
+</html>

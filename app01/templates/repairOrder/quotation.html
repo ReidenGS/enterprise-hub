@@ -1,0 +1,510 @@
+{% extends 'repairOrder/layout.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>增添报价信息</title>
+    <link rel="stylesheet" href="{% static 'app01/plugins/bootstrap-3.4.1/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'app01/plugins/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">
+    <script src="{% static 'app01/js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'app01/plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'app01/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js' %}"></script>
+    <script src="{% static 'app01/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% block css %}
+    <style>
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 8px;
+        }
+        .card-header {
+            background-color: #4a76a8;
+            color: white;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: bold;
+        }
+        .card-body {
+            padding: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .form-control {
+            border-radius: 5px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #4a76a8;
+            box-shadow: 0 0 0 0.2rem rgba(74, 118, 168, 0.25);
+        }
+        .btn-info {
+            background-color: #4a76a8;
+            border-color: #4a76a8;
+            padding: 8px 20px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .btn-info:hover {
+            background-color: #3a5f8a;
+            border-color: #3a5f8a;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
+        .btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn-default{
+            margin-top:10px;
+            align-items: center;
+            font-size: small;
+        }
+        .row{
+            display: flex;
+            flex-direction: row;
+        }
+        .btn-group-vertical{
+            margin-left: 400px;
+        }
+        .quotation-input-row {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .mt-2{
+            margin-top:15px
+        }
+        /* 新增样式 */
+        .warranty-option {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .warranty-option label {
+            margin-right: 15px;
+            font-weight: normal;
+        }
+        .hidden-section {
+            display: none;
+        }
+    </style>
+{% endblock %}
+</head>
+{% block content%}
+    <div class="container" style="margin-top: 30px">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="panel-title mb-0">
+                            <i class="fas fa-file-invoice-dollar mr-2"></i>增添报价信息
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                             <!-- 新增保内选项 -->
+                            <div class="form-group warranty-option">
+                                <label>报价类型：</label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="warranty_type" value="normal" {% if all_quotations != "保内无需报价" %}checked{% endif %} onclick="toggleQuotationSection(true)"> 正常报价
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="warranty_type" value="in_warranty" {% if all_quotations == "保内无需报价" %}checked{% endif %} onclick="toggleQuotationSection(false)"> 保内无需报价
+                                </label>
+                            </div>
+                            <div id="quotationSection">
+                                <div class="form-group">
+                                    <label>报价条目</label>
+                                    <div class="quotation-section">
+                                        <table class="table table-bordered" id="quotationTable">
+                                            <thead>
+                                            <tr>
+                                                <th>编号</th>
+                                                <th>名称及型号</th>
+                                                <th>单位</th>
+                                                <th>数量</th>
+                                                <th>税率%</th>
+                                                <th>含税单价</th>
+                                                <th>含税金额</th>
+                                                <th>备注</th>
+                                                <th>操作</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- 报价条目将在这里动态添加 -->
+                                            </tbody>
+                                        </table>
+
+                                        <!-- 添加报价条目的输入区域 -->
+                                        <div id="quotationInputArea" style="display: none;">
+                                            <div class="quotation-input-row">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <label>名称及型号</label>
+                                                        <input type="text" class="form-control quotation-input" id="quotationName" placeholder="请输入名称及型号">
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <label>单位</label>
+                                                        <input type="text" class="form-control quotation-input" id="quotationUnit" placeholder="单位">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label>数量</label>
+                                                        <input type="number" class="form-control quotation-input" id="quotationQuantity" placeholder="数量" >
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label>税率%</label>
+                                                        <input type="number" class="form-control quotation-input" id="quotationRate" placeholder="税率">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label>含税单价</label>
+                                                        <input type="number" step="0.01" class="form-control quotation-input" id="quotationUnitPrice" placeholder="单价">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label>含税金额</label>
+                                                        <input type="number" step="0.01" class="form-control quotation-input" id="quotationTotalPrice" placeholder="金额">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label>备注</label>
+                                                        <input type="text" class="form-control quotation-input" id="quotationRemark" placeholder="备注">
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-md-12 text-right">
+                                                        <button type="button" class="btn btn-success" onclick="saveQuotation()">
+                                                            <i class="fas fa-check"></i> 保存
+                                                        </button>
+                                                        <button type="button" class="btn btn-secondary" onclick="cancelAddQuotation()">
+                                                            <i class="fas fa-times"></i> 取消
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary" id="addQuotationBtn" onclick="showAddQuotationForm()">
+                                            <i class="fas fa-plus"></i> 添加报价条目
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" id="addQuotationBtn" data-toggle="modal" data-target="#importModal">
+                                            <i class="fas fa-plus"></i> 导入报价条目
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="btn-container">
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <i class="fas fa-save mr-1"></i>保存报价
+                                </button>
+                                {% if quotation_status != 0 %}
+                                <a class="btn btn-danger" target="_blank" href="{{filePath}}">
+                                    查看报价单
+                                </a>
+                                {% endif %}
+                                <a class="btn btn-info" href="/repairOrder_info/?{{params}}">
+                                    <i class="fas fa-arrow-left mr-1"></i>返回
+                                </a>
+                            </div>
+                        </form>
+                     <!-- 添加导入模态框 -->
+    <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="importModalLabel">导入报价信息</h4>
+                </div>
+                <form id="importForm" method="post" enctype="multipart/form-data" onsubmit="return false;">
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="excel_file">选择Excel文件</label>
+                            <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx,.xls" required>
+                            <p class="help-block">请上传符合模板格式的Excel文件</p>
+                        </div>
+                        <div class="form-group">
+                            <a href="/media/templates/companyInfo_template.xlsx" class="btn btn-link">
+                                <i class="fa fa-download"></i> 下载导入模板
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                        <button  class="btn btn-primary" id="importBtn" onclick="submitExcel()">开始导入</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block js %}
+<script>
+    // 存储报价条目的数组
+    let quotations = [];
+    let nextId = 1; // 用于生成条目ID
+    //初始化报价条目
+    {% if all_quotations != "保内无需报价" %}
+
+        {% for item in all_quotations %}
+            // 创建新的报价条目
+            {#const newQuotation = {#}
+            {#    id: item.id,#}
+            {#    name: item.name,#}
+            {#    unit: item.unit || '台', // 默认单位#}
+            {#    quantity: item.quantity,#}
+            {#    rate: item.rate || 13, // 默认税率#}
+            {#    tax_unitprice: item.unitPrice,#}
+            {#    tax_price: item.totalPrice,#}
+            {#    tag: item.remark#}
+            {# };#}
+
+            quotations.push({
+                id: nextId++,
+                name: '{{ item.name }}',
+                unit: '{{ item.unit }}' || '台', // 默认单位
+                quantity: '{{ item.quantity }}',
+                rate: '{{ item.rate }}' || 13, // 默认税率
+                tax_unitprice: '{{ item.tax_unitprice }}',
+                tax_price: '{{ item.tax_price }}',
+                tag: '{{ item.tag }}'
+             });
+            updateQuotationTable();
+        {% endfor %}
+        {% else %}
+        toggleQuotationSection(false)
+    {% endif %}
+
+    // 显示添加报价条目的表单
+    function showAddQuotationForm() {
+        $('#quotationInputArea').show();
+        $('#addQuotationBtn').hide();
+        // 清空输入框
+        $('.quotation-input').val('');
+    }
+
+    // 取消添加报价条目
+    function cancelAddQuotation() {
+        $('#quotationInputArea').hide();
+        $('#addQuotationBtn').show();
+    }
+
+    // 计算含税金额
+    function calculateTotalPrice() {
+        const quantity = parseFloat($('#quotationQuantity').val()) || 0;
+        const unitPrice = parseFloat($('#quotationUnitPrice').val()) || 0;
+        const rate = parseFloat($('#quotationRate').val()) || 0;
+
+        // 计算含税金额
+        {#const totalPrice = quantity * unitPrice * (1 + rate / 100);#}
+        {#$('#quotationTotalPrice').val(totalPrice.toFixed(2));#}
+    }
+
+    // 监听单价和数量的变化
+    $('#quotationQuantity, #quotationUnitPrice, #quotationRate').on('input', calculateTotalPrice);
+
+    // 保存报价条目
+    function saveQuotation() {
+        const name = $('#quotationName').val().trim();
+        const unit = $('#quotationUnit').val().trim();
+        const quantity = $('#quotationQuantity').val().trim();
+        const rate = $('#quotationRate').val().trim();
+        const unitPrice = $('#quotationUnitPrice').val().trim();
+        const totalPrice = $('#quotationTotalPrice').val().trim();
+        const remark = $('#quotationRemark').val().trim();
+
+        if (!name) {
+            alert('请输入名称及型号!');
+            return;
+        }
+
+        if (!quantity || isNaN(quantity)) {
+            alert('请输入有效的数量!');
+            return;
+        }
+
+        if (!unitPrice || isNaN(unitPrice)) {
+            alert('请输入有效的单价!');
+            return;
+        }
+
+        // 创建新的报价条目
+        const newQuotation = {
+            id: nextId++,
+            name: name,
+            unit: unit || '台', // 默认单位
+            quantity: quantity,
+            rate: rate || 13, // 默认税率
+            tax_unitprice: unitPrice,
+            tax_price: totalPrice,
+            tag: remark
+        };
+
+        quotations.push(newQuotation);
+        updateQuotationTable();
+        cancelAddQuotation();
+    }
+
+    // 更新报价表格显示
+    function updateQuotationTable() {
+        let tableBody = $('#quotationTable tbody');
+        tableBody.empty();
+
+        quotations.forEach(quotation => {
+            tableBody.append(`
+                <tr>
+                    <td>${quotation.id}</td>
+                    <td>${quotation.name}</td>
+                    <td>${quotation.unit}</td>
+                    <td>${quotation.quantity}</td>
+                    <td>${quotation.rate}</td>
+                    <td>${quotation.tax_unitprice}</td>
+                    <td>${quotation.tax_price}</td>
+                    <td>${quotation.tag || '-'}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-xs" onclick="deleteQuotation(${quotation.id})">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    // 删除报价条目
+    function deleteQuotation(id) {
+        if (confirm('确定要删除这个报价条目吗?')) {
+            quotations = quotations.filter(item => item.id !== id);
+            nextId--;
+            updateQuotationTable();
+         }
+    }
+
+    function toggleQuotationSection(show) {
+        if (show) {
+            $('#quotationSection').show();
+        } else {
+            $('#quotationSection').hide();
+            {#quotations = []; // 清空报价条目#}
+            updateQuotationTable();
+        }
+    }
+
+    // 修改表单提交处理
+    $('#submitBtn').click(function(e) {
+        e.preventDefault();
+
+        const warrantyType = $('input[name="warranty_type"]:checked').val();
+
+        // 如果是正常报价但没有添加条目
+        if (warrantyType === 'normal' && quotations.length === 0) {
+            alert('请至少添加一个报价条目或选择"保内无需报价"!');
+            return;
+        }
+
+        // 准备CSRF token
+        const csrftoken = getCookie('csrftoken');
+
+        // 获取客户ID
+        const url = new URL(window.location.href);
+        const pathParts = url.pathname.split('/');
+        const customerId = pathParts[2];
+
+        // 发送AJAX请求
+        $.ajax({
+            url: window.location.href,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                quotations: warrantyType === 'normal' ? quotations : [],
+                warranty_type: warrantyType,
+                customer_id: customerId
+            }),
+            success: function(response) {
+                if(response.success) {
+                    alert(warrantyType === 'normal' ? '报价信息保存成功！' : '保内无需报价信息已记录！');
+                    {#window.location.href = "/c_info_list/?token={{ token }}";#}
+                    location.reload()
+                } else {
+                    alert('保存失败: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('保存过程中发生错误: ' + error);
+            }
+        });
+    });
+
+    // 辅助函数：获取CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    // 处理导入表单提交
+    function submitExcel() {
+        const form = document.getElementById('importForm');
+         const formData = new FormData(form);
+
+        $('#importBtn').html('<i class="fa fa-spinner fa-spin"></i> 导入中...').prop('disabled', true);
+        const url = new URL(window.location.href);
+        const pathParts = url.pathname.split('/');
+        const repairId = pathParts[2];
+        $.ajax({
+            url: '/quotation_import/?token={{ token }}&id='+repairId,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if(response.success) {
+                    alert('成功导入 ' + response.imported_count + ' 条记录');
+                    window.location.reload();
+                } else {
+                    alert('导入失败: ' + response.message);
+                }
+                $('#importBtn').html('开始导入').prop('disabled', false);
+                $('#importModal').modal('hide');
+            },
+            error: function(xhr) {
+                alert('导入时发生错误（请检查是否添加导入表）');
+                $('#importBtn').html('开始导入').prop('disabled', false);
+            }
+        });
+    };
+</script>
+{% endblock %}

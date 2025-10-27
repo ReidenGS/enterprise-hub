@@ -1,0 +1,39 @@
+{% extends "sells/base.html" %}
+{% load static %}
+
+{% block title %}确认删除拜访记录{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4>确认删除拜访记录</h4>
+        </div>
+        <div class="card-body">
+            <p class="lead">您确定要删除以下拜访记录吗？此操作不可撤销。</p>
+            
+            <div class="alert alert-warning">
+                <h5>拜访记录详情</h5>
+                <ul class="list-unstyled">
+                    <li><strong>客户名称：</strong>{{ record.client.name }}</li>
+                    <li><strong>拜访日期：</strong>{{ record.visit_date }}</li>
+                    <li><strong>拜访方式：</strong>{{ record.get_method_display }}</li>
+                    <li><strong>拜访目的：</strong>{{ record.get_purpose_display }}</li>
+                </ul>
+            </div>
+            
+            <form method="post" action="{% url 'visit_delete' record.pk %}">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <a href="javascript:history.back();" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> 取消返回
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> 确认删除
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

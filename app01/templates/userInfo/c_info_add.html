@@ -1,0 +1,426 @@
+{% extends 'userInfo/layout.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>增添人文信息</title>
+    <link rel="stylesheet" href="{% static 'app01/plugins/bootstrap-3.4.1/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'app01/plugins/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">
+    <script src="{% static 'app01/js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'app01/plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'app01/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js' %}"></script>
+    <script src="{% static 'app01/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% block css %}
+    <style>
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 8px;
+        }
+        .card-header {
+            background-color: #4a76a8;
+            color: white;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: bold;
+        }
+        .card-body {
+            padding: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .form-control {
+            border-radius: 5px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #4a76a8;
+            box-shadow: 0 0 0 0.2rem rgba(74, 118, 168, 0.25);
+        }
+        .btn-info {
+            background-color: #4a76a8;
+            border-color: #4a76a8;
+            padding: 8px 20px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .btn-info:hover {
+            background-color: #3a5f8a;
+            border-color: #3a5f8a;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
+        .btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn-default{
+            margin-top:10px;
+            align-items: center;
+            font-size: small;
+        }
+        .row{
+            display: flex;
+            flex-direction: row;
+        }
+        .btn-group-vertical{
+            margin-left: 400px;
+        }
+    </style>
+    {% endblock %}
+</head>
+{% block content%}
+    <div class="container" style="margin-top: 30px">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="panel-title mb-0">
+                            <i class="fas fa-user-plus mr-2"></i>增添企业信息
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            {% for field in form %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">
+                                        {% if field.field.required %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <span class="error-message">{{ field.errors.0 }}</span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            <div class="form-group">
+                                <label>所购机器(型号 机器编号)</label>
+                                <div class="machine-section">
+                                    <table class="table table-bordered" id="showTable">
+                                        <thead>
+                                        <tr>
+                                            <th>机器型号</th>
+                                            <th>机器编号</th>
+                                            <th>操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+
+                                      </table>
+                                    <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#addMachineModal">
+                                        <i class="fas fa-plus"></i> 添加机型
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="btn-container">
+                                <button type="submit" class="btn btn-primary" id="#submit">
+                                    <i class="fas fa-save mr-1"></i>增添
+                                </button>
+                                <a class="btn btn-info" href="/c_info_list/?{{params}}">
+                                    <i class="fas fa-arrow-left mr-1"></i>返回
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加机型的模态框 -->
+    <div class="modal fade" id="addMachineModal" tabindex="-1" role="dialog" aria-labelledby="addMachineModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMachineModalLabel">添加新机型</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                        <!-- 修改为并排输入框 -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>机器型号</label>
+                                <input type="text" class="form-control" id="machineNameInput" placeholder="请输入机器型号">
+                            </div>
+                            <div class="col-md-6">
+                                <label>机器编号</label>
+                                <input type="text" class="form-control" id="machineIdInput" placeholder="请输入机器编号">
+                            </div>
+                        </div>
+                        <div class="btn-group-vertical" role="group" aria-label="...">
+                                <button type="button" class="btn btn-default btn-lg active" onclick="addCustomMachine()">
+                                    <i class="fas fa-plus" style="font-size: small"></i> 添加输入机型
+                                </button>
+                            </div>
+                    <div class="form-group">
+                        <label for="machineSelect">选择机器:</label>
+                        <select class="form-control" id="machineSelect">
+                            <option value="">-- 请选择机器 --</option>
+                            {% for machine in all_machines %}
+                                <option value="{{ machine.id }}" data-name="{{ machine.name }}" data-serial="{{ machine.machine_id }}">
+                                    {{ machine.name }} ({{ machine.machine_id }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="btn-group-vertical" role="group" aria-label="...">
+                            <button type="button" class="btn btn-default btn-lg active" onclick="addMachine('#machineSelect')">
+                                <i class="fas fa-plus" style="font-size: small"></i> 添加选中机型
+                            </button>
+                        </div>
+
+                    </div>
+                   <div class="panel panel-default">
+                      <!-- Default panel contents -->
+                      <div class="panel-heading">已购机器</div>
+
+                      <!-- Table -->
+                      <table class="table table-bordered" id="reformTable">
+                        <thead>
+                        <tr>
+                            <th>机器型号</th>
+                            <th>机器编号</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        </tbody>
+
+                      </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-info" id="save_machine">保存机型</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block js %}
+<script>
+
+    // 存储已选机器的数组
+    let selectedMachines = [];
+    let newMachines = []
+    let AllMachines = []
+    // 初始化已选机器
+    {% for item in machine %}
+        selectedMachines.push({
+            id: "{{ item.id }}",
+            name: "{{ item.name }}",
+            machine_id: "{{ item.machine_id }}"
+        });
+    {% endfor %}
+    {% for item in all_machines %}
+        AllMachines.push({
+            id: "{{ item.id }}",
+            name: "{{ item.name }}",
+            machine_id: "{{ item.machine_id }}"
+        });
+    {% endfor %}
+
+    // 更新已购机器表格显示
+    function updateMachineTable() {
+        let reformTableBody = $('#reformTable tbody');
+        let showTableBody = $('#showTable tbody');
+        reformTableBody.empty();
+        showTableBody.empty();
+
+        newMachines.forEach(machine => {
+            reformTableBody.append(`
+                <tr>
+                    <td>${machine.name}</td>
+                    <td>${machine.machine_id}</td>
+                    <td>
+                        <a class="btn btn-danger btn-xs" onclick="DeleteMachine('${machine.machine_id}')">删除</a>
+                    </td>
+                </tr>
+            `);
+            showTableBody.append(`
+                <tr>
+                    <td>${machine.name}</td>
+                    <td>${machine.machine_id}</td>
+                    <td>
+                        <a class="btn btn-danger btn-xs" onclick="DeleteMachine('${machine.machine_id}')">删除</a>
+                    </td>
+                </tr>
+
+            `);
+        });
+    }
+
+    // 初始化表格显示
+    updateMachineTable();
+
+    function addMachine(selector) {
+        const selectElement = $(selector);
+        const selectedOption = selectElement.find('option:selected');
+
+        if (selectedOption.val()) {
+            const machineId = selectedOption.val();
+            const machineName = selectedOption.data('name');
+            const machineSerial = selectedOption.data('serial');
+            console.log(selectedMachines)
+            // 检查是否已存在
+            const exists = selectedMachines.some(m => m.id === machineId);
+
+            if (!exists) {
+                selectedMachines.push({
+                    id: machineId,
+                    name: machineName,
+                    machine_id: machineSerial
+                });
+                newMachines.push({
+                    id: machineId,
+                    name: machineName,
+                    machine_id: machineSerial
+                });
+                console.log(selectedMachines)
+                // 更新表格显示
+                updateMachineTable();
+
+                // 重置选择框
+                selectElement.val('');
+            } else {
+                alert('该机器已存在!');
+            }
+        } else {
+            alert('请先选择机器!');
+        }
+    }
+    // 添加自定义机器
+    function addCustomMachine() {
+        const name = $('#machineNameInput').val().trim();
+        const machineId = $('#machineIdInput').val().trim();
+
+        if (name && machineId) {
+            // 生成一个临时ID（可以使用时间戳或其他唯一标识）
+            const tempId = Date.now();
+
+            // 检查是否已存在相同编号的机器
+            const exists = selectedMachines.some(m => m.machine_id === machineId);
+            if (!exists) {
+                const newMachine = {
+                    id: tempId,
+                    name: name,
+                    machine_id: machineId,
+                    isCustom: true // 标记为自定义添加的机器
+                };
+
+                selectedMachines.push(newMachine);
+                newMachines.push(newMachine);
+
+                // 清空输入框
+                $('#machineNameInput').val('');
+                $('#machineIdInput').val('');
+
+                // 更新表格显示
+                updateMachineTable();
+            } else {
+                alert('该机器编号已添加!');
+
+
+            }
+        } else {
+            alert('请输入完整的机器型号和编号!');
+        }
+    }
+    function DeleteMachine(machine_id){
+        console.log(machine_id)
+        const select_id = selectedMachines.findIndex(m => m.machine_id === machine_id)
+        const new_id = newMachines.findIndex(m => m.machine_id === machine_id)
+        selectedMachines.splice(select_id,1)
+        newMachines.splice(new_id,1)
+        updateMachineTable();
+    }
+
+
+    // 保存机型按钮点击事件
+    $('#save_machine').click(function() {
+        $('#addMachineModal').modal('hide');
+     });
+
+    $('.btn-primary').click(function() {
+    // 准备CSRF token
+    const csrftoken = getCookie('csrftoken');
+
+    // 发送AJAX请求
+        // 方法1：使用URL对象
+        const url = new URL(window.location.href);
+        const pathParts = url.pathname.split('/');
+        const id = pathParts[2]; // 根据你的URL结构调整索引
+    console.log(newMachines)
+    if(newMachines != None){
+        $.ajax({
+        url: url, // 后端API端点
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+         },
+        data: JSON.stringify({
+            machines: newMachines,
+            // 可以添加其他需要保存的数据，如客户ID等
+            customer_id: id // 从模板传递的客户ID
+        }),
+        success: function(response) {
+            if(response.success) {
+                {#alert('企业信息保存成功！');#}
+                {#$('#addMachineModal').modal('hide');#}
+                // 可选：刷新页面或更新UI
+                location.reload();
+
+            }
+            {#else {#}
+            {#    alert('保存失败: ' + response.message);#}
+            {# }#}
+        },
+        error: function(xhr, status, error) {
+            {#$('#addMachineModal').modal('hide');#}
+        }
+    });
+    }
+
+});
+
+// 辅助函数：获取CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

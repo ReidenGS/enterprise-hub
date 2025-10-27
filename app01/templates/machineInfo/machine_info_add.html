@@ -1,0 +1,35 @@
+{% extends 'machineInfo/layout.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>增添机器信息</title>
+    <link rel="stylesheet" href="{% static 'app01/plugins/bootstrap-3.4.1/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{%  static 'app01/plugins/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">
+    {% block css %}{% endblock %}
+</head>
+{% block content%}
+    <div class="container" style="margin-top: 50px">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"> 增添机器信息 </h3>
+            </div>
+            <div class="panel-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label>{{ field.label }}</label>
+                            {{ field  }}
+                            <span style="color: red">{{ field.errors.0  }}</span>
+                        </div>
+                    {% endfor %}
+                <button type="submit" class="btn btn-info" style="text-align: center">增添</button>
+                <a class="btn btn-info" href="/machine_info/?{{params}}">返回</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

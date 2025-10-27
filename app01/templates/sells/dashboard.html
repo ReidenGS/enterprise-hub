@@ -1,0 +1,207 @@
+{% extends 'sells/base.html' %}
+
+{% block title %}仪表盘{% endblock %}
+{% block page_title %}系统概览{% endblock %}
+
+{% block content %}
+<div class="row mb-5"> <div class="col-md-3 mb-4"> <div class="card text-white bg-primary card-hover border-0 shadow-sm"> <div class="card-body py-4 px-4"> <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title text-uppercase fw-normal mb-1">客户总数</h5> <h2 class="card-text fw-bold mb-0">{{ stats.clients_count }}</h2> </div>
+                    <i class="bi bi-people display-4 opacity-75"></i> </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success card-hover border-0 shadow-sm">
+            <div class="card-body py-4 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title text-uppercase fw-normal mb-1">拜访记录</h5>
+                        <h2 class="card-text fw-bold mb-0">{{ stats.visits_count }}</h2>
+                    </div>
+                    <i class="bi bi-journal-text display-4 opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning card-hover border-0 shadow-sm">
+            <div class="card-body py-4 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title text-uppercase fw-normal mb-1">年度计划</h5>
+                        <h2 class="card-text fw-bold mb-0">{{ stats.plans_count }}</h2>
+                    </div>
+                    <i class="bi bi-calendar-check display-4 opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{#    <div class="col-md-3 mb-4">#}
+{#        <div class="card text-white bg-info card-hover border-0 shadow-sm">#}
+{#            <div class="card-body py-4 px-4">#}
+{#                <div class="d-flex justify-content-between align-items-center">#}
+{#                    <div>#}
+{#                        <h5 class="card-title text-uppercase fw-normal mb-1">完成率</h5>#}
+{#                        <h2 class="card-text fw-bold mb-0">78%</h2> {# Placeholder, as this isn't dynamic from view data #}
+{#                    </div>#}
+{#                    <i class="bi bi-graph-up display-4 opacity-75"></i>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100"> <div class="card-header bg-light py-3"> <h5 class="mb-0 fw-bold text-primary">最近拜访记录</h5> </div>
+            <div class="card-body p-0"> {% if recent_visits %}
+                <div class="list-group list-group-flush"> {% for visit in recent_visits %}
+                    <a href="{% url 'visit_detail' visit.pk %}"
+                       class="list-group-item list-group-item-action py-3 px-4 d-flex flex-column"> <div class="d-flex justify-content-between align-items-baseline mb-1">
+                            <h6 class="mb-0 fw-bold text-dark">{{ visit.client.name }}</h6> <small class="text-muted text-end ms-2">{{ visit.visit_date|date:"Y年m月d日" }}</small> </div>
+                        <p class="mb-1 text-muted text-truncate" style="max-width: 90%;">{{ visit.get_purpose_display }}</p> <small class="text-secondary">负责人: {{ visit.salesperson.username }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted"> <i class="bi bi-calendar-x display-5 mb-3"></i> <p class="fs-5">暂无拜访记录</p> <p class="text-muted">开始创建您的第一个拜访记录吧！</p>
+                    <a href="{% url 'visit_create' %}" class="btn btn-primary btn-sm mt-3">新建拜访</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100"> <div class="card-header bg-light py-3">
+                <h5 class="mb-0 fw-bold text-primary">待跟进计划</h5>
+            </div>
+            <div class="card-body p-0"> {% if upcoming_followups %}
+                <div class="list-group list-group-flush">
+                    {% for followup in upcoming_followups %}
+                    <div class="list-group-item py-3 px-4">
+                        <div class="d-flex justify-content-between align-items-baseline mb-1">
+                            <h6 class="mb-0 fw-bold text-dark">{{ followup.visit_record.client.name }}</h6>
+                            <small class="text-muted text-end ms-2">{{ followup.follow_up_date|date:"Y年m月d日" }}</small>
+                        </div>
+                        <p class="mb-1 text-muted text-truncate" style="max-width: 90%;">{{ followup.expected_outcome }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-secondary">负责人: {{ followup.responsible_person.username }}</small>
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-1">待处理</span> </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-check-circle display-5 mb-3"></i>
+                    <p class="fs-5">暂无待跟进计划</p>
+                    <p class="text-muted">一切都已安排妥当，保持好状态！</p>
+                    <a href="{% url 'visit_list' %}" class="btn btn-outline-primary btn-sm mt-3">查看所有拜访</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-primary">月度报表概览</h5>
+                <a href="{% url 'monthly_report_create' %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i> 提交月报
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if weekly_reports %}
+                <div class="list-group list-group-flush">
+                    {% for report in monthly_reports %}
+                    <div class="list-group-item py-3 px-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-bold text-dark">{{ report.month|date:"Y年m月" }} 月报</h6>
+                            <small class="text-muted">负责人: {{ report.reporter.username }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-secondary me-2">{{ report.team }}</span>
+                            <span class="badge bg-primary me-2">销售额: ¥{{ report.monthly_sales|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <a href="{% url 'monthly_report_detail' report.pk %}"
+                               class="btn btn-sm btn-outline-primary me-2"
+                               data-bs-toggle="tooltip" title="查看详情">
+                                <i class="bi bi-eye"></i> 查看
+                            </a>
+                            <a href="{% url 'monthly_report_delete' report.pk %}"
+                               class="btn btn-sm btn-outline-danger"
+                               data-bs-toggle="tooltip" title="删除报表">
+                                <i class="bi bi-trash"></i> 删除
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-file-earmark-bar-graph display-5 mb-3"></i>
+                    <p class="fs-5">暂无月度报表</p>
+                    <p class="text-muted">您还没有提交月度销售报表。</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-primary">周报表概览</h5>
+                <a href="{% url 'weekly_report_create' %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i> 提交周报
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if weekly_reports %}
+                <div class="list-group list-group-flush">
+                    {% for report in weekly_reports %}
+                    <div class="list-group-item py-3 px-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-bold text-dark">{{ report.week_start|date:"Y年m月" }} 周报</h6>
+                            <small class="text-muted">负责人: {{ report.reporter.username }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-secondary me-2">{{ report.team }}</span>
+                            <span class="badge bg-primary">销售额: ¥{{ report.weekly_sales|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <a href="{% url 'weekly_report_detail' report.pk %}"
+                               class="btn btn-sm btn-outline-primary me-2"
+                               data-bs-toggle="tooltip" title="查看详情">
+                                <i class="bi bi-eye"></i> 查看
+                            </a>
+                            <a href="{% url 'weekly_report_delete' report.pk %}"
+                               class="btn btn-sm btn-outline-danger"
+                               data-bs-toggle="tooltip" title="删除报表">
+                                <i class="bi bi-trash"></i> 删除
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-file-earmark-bar-graph display-5 mb-3"></i>
+                    <p class="fs-5">暂无周报表</p>
+                    <p class="text-muted">您还没有提交周销售报表。</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

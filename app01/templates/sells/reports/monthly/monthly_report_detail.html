@@ -1,0 +1,274 @@
+{% extends 'sells/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>{{ report.reporter.username }}的{{ report.month|date:"Y年m月" }}报表</h4>
+                <span class="badge bg-light text-dark">{{ report.team }}</span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <!-- 左侧基本信息 -->
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">基本信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>填报日期:</span>
+                                    <span>{{ report.created_at|date:"Y-m-d H:i" }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>填报人:</span>
+                                    <span>{{ report.reporter.username }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>所属团队:</span>
+                                    <span>{{ report.team }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 销售业绩 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">销售业绩</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="fw-bold">本月销售额:</span>
+                                <span class="float-end">¥{{ report.monthly_sales|floatformat:2 }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="fw-bold">销售设备数量:</span>
+                                <span class="float-end">{{ report.equipment_sold }}台</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="fw-bold">设备销售明细:</span>
+                                <ul class="list-unstyled mt-2">
+                                    {% for model, count in report.equipment_details.items %}
+                                    <li class="d-flex justify-content-between">
+                                        <span>{{ model }}:</span>
+                                        <span>{{ count }}台</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧主要内容 -->
+                <div class="col-md-8">
+                    <!-- 客户开发与维护 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">客户开发与维护</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6>新客户开发</h6>
+                                        <p>数量: {{ report.new_clients_count }}个</p>
+                                        {% if report.new_clients_details %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>客户名称</th>
+                                                        <th>简要情况</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for name, info in report.new_clients_details.items %}
+                                                    <tr>
+                                                        <td>{{ name }}</td>
+                                                        <td>{{ info }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6>老客户维护</h6>
+                                        <p>回访数量: {{ report.existing_clients_visited }}个</p>
+                                        <p>复购金额: ¥{{ report.repeat_purchase_amount|floatformat:2 }}</p>
+                                        {% if report.repeat_purchase_details %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>客户名称</th>
+                                                        <th>复购情况</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for name, info in report.repeat_purchase_details.items %}
+                                                    <tr>
+                                                        <td>{{ name }}</td>
+                                                        <td>{{ info }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6>客户反馈</h6>
+                                <div class="p-3 bg-light rounded">
+                                    {{ report.existing_client_feedback|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 问题与挑战 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">问题与挑战</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6>产品方面问题</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            {{ report.product_challenges|linebreaks }}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>市场方面问题</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            {{ report.market_challenges|linebreaks }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6>客户方面问题</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            {{ report.customer_challenges|linebreaks }}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>个人方面问题</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            {{ report.personal_challenges|linebreaks }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <h6>解决措施及效果评估</h6>
+                                <div class="p-3 bg-light rounded">
+                                    {{ report.challenge_solutions|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下月计划 -->
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">下月计划</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6>销售目标</h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>销售额目标:</span>
+                                        <span>¥{{ report.next_month_sales_target|floatformat:2 }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>设备销售目标:</span>
+                                        <span>{{ report.next_month_equipment_target }}台</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>新客户开发目标:</span>
+                                        <span>{{ report.next_month_new_clients_target }}个</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>老客户复购目标:</span>
+                                        <span>¥{{ report.next_month_repeat_purchase_target|floatformat:2 }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6>资源需求</h6>
+                                <div class="p-3 bg-light rounded">
+                                    <p class="fw-bold">人力资源需求:</p>
+                                    <p>{{ report.hr_needs|linebreaksbr }}</p>
+                                    <p class="fw-bold mt-2">财务资源需求:</p>
+                                    <p>{{ report.financial_needs|linebreaksbr }}</p>
+                                    <p class="fw-bold mt-2">技术资源需求:</p>
+                                    <p>{{ report.technical_needs|linebreaksbr }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6>重点工作安排</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ report.key_tasks|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">返回列表</a>
+            <a href="{% url 'monthly_report_edit' report.pk %}" class="btn btn-primary ms-2">编辑报表</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+.card-header {
+    padding: 1rem 1.25rem;
+}
+.list-group-item {
+    padding: 0.75rem 1.25rem;
+    border-color: rgba(0,0,0,.05);
+}
+.bg-light {
+    background-color: #f8f9fa!important;
+}
+.rounded {
+    border-radius: 8px!important;
+}
+.table-sm th, .table-sm td {
+    padding: 0.3rem;
+}
+</style>
+{% endblock %}

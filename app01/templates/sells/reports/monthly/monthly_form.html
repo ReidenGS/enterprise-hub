@@ -1,0 +1,624 @@
+{#{% extends 'sells/base.html' %}#}
+{#{% load static %}#}
+{##}
+{#{% block title %}创建月度报表{% endblock %}#}
+{#{% block page_title %}创建月度报表{% endblock %}#}
+{##}
+{#{% block extra_css %}#}
+{#    <link rel="stylesheet" href="{% static 'plugins/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">#}
+{#{% endblock %}#}
+{##}
+{#{% block content %}#}
+{#<div class="row justify-content-center">#}
+{#    <div class="col-md-8">#}
+{#        <div class="card shadow-lg p-4">#}
+{#            <div class="card-body">#}
+{#                <h3 class="card-title text-center mb-4">创建月度销售报表</h3>#}
+{##}
+{#                {% if messages %}#}
+{#                    {% for message in messages %}#}
+{#                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">#}
+{#                            {{ message }}#}
+{#                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{#                {% endif %}#}
+{##}
+{#                <form method="post">#}
+{#                    {% csrf_token %}#}
+{##}
+{#                    {% for field in form %}#}
+{#                        <div class="mb-3">#}
+{#                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>#}
+{#                            {{ field }}#}
+{#                            {% if field.help_text %}#}
+{#                                <div class="form-text text-muted">{{ field.help_text }}</div>#}
+{#                            {% endif %}#}
+{#                            {% if field.errors %}#}
+{#                                <div class="invalid-feedback d-block">#}
+{#                                    {% for error in field.errors %}#}
+{#                                        {{ error }}#}
+{#                                    {% endfor %}#}
+{#                                </div>#}
+{#                            {% endif %}#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{##}
+{#                    {% if form.non_field_errors %}#}
+{#                        <div class="alert alert-danger" role="alert">#}
+{#                            {% for error in form.non_field_errors %}#}
+{#                                {{ error }}#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+{#                    {% endif %}#}
+{##}
+{#                    <div class="d-grid gap-2 mt-4">#}
+{#                        <button type="submit" class="btn btn-primary btn-lg">提交月报</button>#}
+{#                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg">取消</a>#}
+{#                    </div>#}
+{#                </form>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+{#{% endblock %}#}
+{##}
+{#{% block extra_js %}#}
+{#    <script src="{% static 'plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}"></script>#}
+{#    <script src="{% static 'plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>#}
+{#    <script>#}
+{#        $(document).ready(function() {#}
+{#            $('form input, form select, form textarea').not('[type="checkbox"], [type="radio"], [type="file"]').addClass('form-control');#}
+{##}
+{#            // Specific initialization for month field#}
+{#            $('input[name="month"]').datepicker({#}
+{#                format: 'yyyy-mm', // Only year and month#}
+{#                language: 'zh-CN',#}
+{#                autoclose: true,#}
+{#                startView: 'months',#}
+{#                minViewMode: 'months',#}
+{#                orientation: 'bottom',#}
+{#                todayHighlight: true#}
+{#            });#}
+{#        });#}
+{#    </script>#}
+{#{% endblock %}#}
+
+{% extends 'sells/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">月度营销报表填报</h2>
+    <form method="post" id="monthlyReportForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- 基本信息 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>基本信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="month">报表月份</label>
+                            <input type="month" class="form-control" id="month" name="month" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="team">所属团队</label>
+                            <input type="text" class="form-control" id="team" name="team" >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 销售业绩完成情况 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>销售业绩完成情况</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="monthly_sales">本月销售额</label>
+                            <input type="number" step="0.01" class="form-control" id="monthly_sales" name="monthly_sales" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="equipment_sold">本月销售设备数量</label>
+                            <input type="number" class="form-control" id="equipment_sold" name="equipment_sold" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>不同型号设备销售数量明细</label>
+                    <div id="equipment-details-container">
+                        <div class="equipment-detail-item mb-2">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="equipment_details_key" placeholder="设备型号" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="number" class="form-control" name="equipment_details_value" placeholder="销售数量" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger remove-equipment-detail">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-2" id="add-equipment-detail">添加设备明细</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="sales_analysis">销售业绩分析</label>
+                    <textarea class="form-control" id="sales_analysis" name="sales_analysis" rows="4" ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 客户开发与维护 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>客户开发与维护</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="new_clients_count">新客户开发数量</label>
+                            <input type="number" class="form-control" id="new_clients_count" name="new_clients_count" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="existing_clients_visited">老客户回访数量</label>
+                            <input type="number" class="form-control" id="existing_clients_visited" name="existing_clients_visited" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>新客户名单及简要情况</label>
+                    <div id="new-clients-details-container">
+                        <div class="new-client-detail-item mb-2">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="new_clients_details_key" placeholder="客户名称">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="new_clients_details_value" placeholder="简要情况">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger remove-new-client-detail">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-2" id="add-new-client-detail">添加新客户</button>
+                </div>
+
+                <div class="form-group">
+                    <label>新客户开发困难及解决方案</label>
+                    <div id="new-client-challenges-container">
+                        <div class="new-client-challenge-item mb-2">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control challenge" name="new_client_challenges_key" placeholder="困难描述">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control challenge" name="new_client_challenges_value" placeholder="解决方案">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger remove-new-client-challenge">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-2" id="add-new-client-challenge">添加困难及解决方案</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="existing_client_feedback">老客户反馈问题及解决情况</label>
+                    <textarea class="form-control" id="existing_client_feedback" name="existing_client_feedback" rows="4" ></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="repeat_purchase_amount">老客户复购金额</label>
+                            <input type="number" step="0.01" class="form-control" id="repeat_purchase_amount" name="repeat_purchase_amount" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>复购客户名单及复购情况</label>
+                    <div id="repeat-purchase-details-container">
+                        <div class="repeat-purchase-detail-item mb-2">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="repeat_purchase_details_key" placeholder="客户名称">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="repeat_purchase_details_value" placeholder="复购情况">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger remove-repeat-purchase-detail">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-2" id="add-repeat-purchase-detail">添加复购客户</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 其他部分 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>其他信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="promotion_activities">市场推广活动参与情况</label>
+                    <textarea class="form-control" id="promotion_activities" name="promotion_activities" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="strategy_implementation">销售策略实施情况</label>
+                    <textarea class="form-control" id="strategy_implementation" name="strategy_implementation" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="industry_trends">行业动态</label>
+                    <textarea class="form-control" id="industry_trends" name="industry_trends" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="competitor_analysis">竞争对手分析</label>
+                    <textarea class="form-control" id="competitor_analysis" name="competitor_analysis" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_demand_changes">客户需求变化</label>
+                    <textarea class="form-control" id="customer_demand_changes" name="customer_demand_changes" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="training_progress">培训与学习情况</label>
+                    <textarea class="form-control" id="training_progress" name="training_progress" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="skill_improvements">工作技能提升表现</label>
+                    <textarea class="form-control" id="skill_improvements" name="skill_improvements" rows="3" ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题与挑战 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>问题与挑战</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="product_challenges">产品方面问题</label>
+                    <textarea class="form-control" id="product_challenges" name="product_challenges" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="market_challenges">市场方面问题</label>
+                    <textarea class="form-control" id="market_challenges" name="market_challenges" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_challenges">客户方面问题</label>
+                    <textarea class="form-control" id="customer_challenges" name="customer_challenges" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="personal_challenges">个人方面问题</label>
+                    <textarea class="form-control" id="personal_challenges" name="personal_challenges" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="challenge_solutions">解决措施及效果评估</label>
+                    <textarea class="form-control" id="challenge_solutions" name="challenge_solutions" rows="3" ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下月计划 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>下月计划</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_month_sales_target">下月销售额目标</label>
+                            <input type="number" step="0.01" class="form-control" id="next_month_sales_target" name="next_month_sales_target" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_month_equipment_target">下月销售设备数量目标</label>
+                            <input type="number" class="form-control" id="next_month_equipment_target" name="next_month_equipment_target" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_month_new_clients_target">下月新客户开发数量目标</label>
+                            <input type="number" class="form-control" id="next_month_new_clients_target" name="next_month_new_clients_target" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_month_repeat_purchase_target">下月老客户复购金额目标</label>
+                            <input type="number" step="0.01" class="form-control" id="next_month_repeat_purchase_target" name="next_month_repeat_purchase_target" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="key_tasks">重点工作安排</label>
+                    <textarea class="form-control" id="key_tasks" name="key_tasks" rows="3" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="hr_needs">人力资源需求</label>
+                    <textarea class="form-control" id="hr_needs" name="hr_needs" rows="2" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="financial_needs">财务资源需求</label>
+                    <textarea class="form-control" id="financial_needs" name="financial_needs" rows="2" ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="technical_needs">技术资源需求</label>
+                    <textarea class="form-control" id="technical_needs" name="technical_needs" rows="2" ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <button type="submit" class="btn btn-primary btn-lg">提交报表</button>
+            <button type="reset" class="btn btn-secondary btn-lg ml-2">重置表单</button>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'app01/js/jquery-3.6.0.min.js' %}"></script>
+{#<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>#}
+<script>
+
+
+$(document).ready(function() {
+    // 设备销售明细
+    $("#add-equipment-detail").click(function() {
+        var newItem = `
+        <div class="equipment-detail-item mb-2">
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="equipment_details_key" placeholder="设备型号">
+                </div>
+                <div class="col-md-5">
+                    <input type="number" class="form-control" name="equipment_details_value" placeholder="销售数量">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-equipment-detail">删除</button>
+                </div>
+            </div>
+        </div>`;
+        $("#equipment-details-container").append(newItem);
+    });
+
+    $(document).on('click', '.remove-equipment-detail', function() {
+        $(this).closest('.equipment-detail-item').remove();
+    });
+
+    // 新客户明细
+    $("#add-new-client-detail").click(function() {
+        var newItem = `
+        <div class="new-client-detail-item mb-2">
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="new_clients_details_key" placeholder="客户名称">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="new_clients_details_value" placeholder="简要情况">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-new-client-detail">删除</button>
+                </div>
+            </div>
+        </div>`;
+        $("#new-clients-details-container").append(newItem);
+    });
+
+    $(document).on('click', '.remove-new-client-detail', function() {
+        $(this).closest('.new-client-detail-item').remove();
+    });
+
+    // 新客户开发困难
+    $("#add-new-client-challenge").click(function() {
+        var newItem = `
+        <div class="new-client-challenge-item mb-2">
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control challenge" name="new_client_challenges_key" placeholder="困难描述">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control challenge" name="new_client_challenges_value" placeholder="解决方案">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-new-client-challenge">删除</button>
+                </div>
+            </div>
+        </div>`;
+        $("#new-client-challenges-container").append(newItem);
+    });
+
+    $(document).on('click', '.remove-new-client-challenge', function() {
+        $(this).closest('.new-client-challenge-item').remove();
+    });
+
+    // 复购客户明细
+    $("#add-repeat-purchase-detail").click(function() {
+        var newItem = `
+        <div class="repeat-purchase-detail-item mb-2">
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="repeat_purchase_details_key" placeholder="客户名称">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="repeat_purchase_details_value" placeholder="复购情况">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-repeat-purchase-detail">删除</button>
+                </div>
+            </div>
+        </div>`;
+        $("#repeat-purchase-details-container").append(newItem);
+    });
+
+    $(document).on('click', '.remove-repeat-purchase-detail', function() {
+        $(this).closest('.repeat-purchase-detail-item').remove();
+    });
+
+    // 表单提交处理
+    $("#monthlyReportForm").submit(function(e) {
+        e.preventDefault();
+
+        // 收集JSON字段数据
+        var formData = $(this).serializeArray();
+        var processedData = {};
+
+        // 处理普通字段
+        $(this).find("input:not([name$='_key']):not([name$='_value']), textarea, select").each(function() {
+            if (this.name) {
+                processedData[this.name] = this.value;
+            }
+        });
+
+        // 处理JSON字段
+        processedData.equipment_details = collectJsonData('equipment_details_key', 'equipment_details_value');
+        processedData.new_clients_details = collectJsonData('new_clients_details_key', 'new_clients_details_value');
+        processedData.new_client_challenges = collectJsonData('new_client_challenges_key', 'new_client_challenges_value');
+        processedData.repeat_purchase_details = collectJsonData('repeat_purchase_details_key', 'repeat_purchase_details_value');
+
+        // 添加CSRF token
+        {#processedData['csrfmiddlewaretoken'] = $("input[name='csrfmiddlewaretoken']").val();#}
+
+        // 发送AJAX请求
+        $.ajax({
+            url: "{% url 'monthly_report_create' %}",
+            {#url: "127.0.0.1:8000/reports/monthly/create/",#}
+            type: "POST",
+            headers: {
+                "X-CSRFToken": $("input[name='csrfmiddlewaretoken']").val()
+            },
+            data: JSON.stringify(processedData),
+            contentType: "application/json",
+            success: function(response) {
+                alert("报表提交成功！");
+                window.location.href = "{% url 'dashboard' %}";
+            },
+            error: function(xhr, status, error) {
+                alert("提交失败: " + xhr.responseText);
+            }
+        });
+    });
+
+    function collectJsonData(keyPrefix, valuePrefix) {
+        var result = {};
+        $("input[name='" + keyPrefix + "']").each(function(index) {
+            var key = $(this).val();
+            var value = $("input[name='" + valuePrefix + "']").eq(index).val();
+            if (key && value) {
+                result[key] = value;
+            }
+        });
+        return result;
+    }
+});
+</script>
+
+<style>
+.form-control.challenge {
+    min-height: 60px;
+    line-height: 20px;
+    padding: 10px;
+    overflow-y: hidden; /* 隐藏垂直溢出 */
+    word-wrap: break-word; /* 强制换行 */
+}
+
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+.btn-secondary {
+    background-color: #858796;
+    border-color: #858796;
+}
+
+.btn-secondary:hover {
+    background-color: #717384;
+    border-color: #717384;
+}
+
+.btn-danger {
+    background-color: #e74a3b;
+    border-color: #e74a3b;
+}
+
+.btn-danger:hover {
+    background-color: #d52a1a;
+    border-color: #d52a1a;
+}
+</style>
+{% endblock %}

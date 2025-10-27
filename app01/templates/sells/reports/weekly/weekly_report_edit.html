@@ -1,0 +1,368 @@
+{% extends 'sells/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">编辑周报表 - {{ report.week_start|date:"Y-m-d" }} 至 {{ report.week_end|date:"Y-m-d" }}</h2>
+    
+    <form method="post" id="weeklyReportForm">
+        {% csrf_token %}
+        <input type="hidden" name="report_id" value="{{ report.report_id }}">
+        
+        <!-- 基本信息 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>基本信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="week_start">周开始日期</label>
+                            <input type="date" class="form-control" id="week_start" name="week_start" 
+                                   value="{{ report.week_start|date:'Y-m-d' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="week_end">周结束日期</label>
+                            <input type="date" class="form-control" id="week_end" name="week_end" 
+                                   value="{{ report.week_end|date:'Y-m-d' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="team">所属团队</label>
+                            <input type="text" class="form-control" id="team" name="team" 
+                                   value="{{ report.team }}" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 销售业绩汇总 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>销售业绩汇总</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="weekly_sales">本周销售额</label>
+                            <input type="number" step="0.01" class="form-control" id="weekly_sales" 
+                                   name="weekly_sales" value="{{ report.weekly_sales }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="last_week_sales">上周销售额</label>
+                            <input type="number" step="0.01" class="form-control" id="last_week_sales" 
+                                   name="last_week_sales" value="{{ report.last_week_sales }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="weekly_target">本周目标销售额</label>
+                            <input type="number" step="0.01" class="form-control" id="weekly_target" 
+                                   name="weekly_target" value="{{ report.weekly_target }}" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="equipment_sold">本周销售设备数量</label>
+                    <input type="number" class="form-control" id="equipment_sold" 
+                           name="equipment_sold" value="{{ report.equipment_sold }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>设备销售详情</label>
+                    <div id="equipment-details-container">
+                        {% for model, count in report.equipment_details.items %}
+                        <div class="equipment-detail-item mb-2">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="equipment_details_key" 
+                                           value="{{ model }}" placeholder="设备型号">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="number" class="form-control" name="equipment_details_value" 
+                                           value="{{ count }}" placeholder="销售数量">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger remove-equipment-detail">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="equipment-detail-item mb-2">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="equipment_details_key" placeholder="设备型号">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="number" class="form-control" name="equipment_details_value" placeholder="销售数量">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger remove-equipment-detail">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-2" id="add-equipment-detail">添加设备明细</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 客户工作进展 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>客户工作进展</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="new_clients_count">新开发客户数量</label>
+                            <input type="number" class="form-control" id="new_clients_count"
+                                   name="new_clients_count" value="{{ report.new_clients_count }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>新客户详情</label>
+                            <div id="new-clients-details-container">
+                                {% for name, info in report.new_clients_details.items %}
+                                <div class="new-client-detail-item mb-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="new_clients_details_key"
+                                                   value="{{ name }}" placeholder="客户名称">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="new_clients_details_value"
+                                                   value="{{ info }}" placeholder="客户详情">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-danger remove-new-client-detail">删除</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="new-client-detail-item mb-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="new_clients_details_key" placeholder="客户名称">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="new_clients_details_value" placeholder="客户详情">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-danger remove-new-client-detail">删除</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-secondary mt-2" id="add-new-client-detail">添加新客户</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="existing_clients_visited">回访老客户数量</label>
+                            <input type="number" class="form-control" id="existing_clients_visited"
+                                   name="existing_clients_visited" value="{{ report.existing_clients_visited }}" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下周计划 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>下周计划</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_week_sales_target">下周销售额目标</label>
+                            <input type="number" step="0.01" class="form-control" id="next_week_sales_target"
+                                   name="next_week_sales_target" value="{{ report.next_week_sales_target }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_week_equipment_target">下周销售设备数量目标</label>
+                            <input type="number" class="form-control" id="next_week_equipment_target"
+                                   name="next_week_equipment_target" value="{{ report.next_week_equipment_target }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_week_new_clients_target">下周新客户开发数量目标</label>
+                            <input type="number" class="form-control" id="next_week_new_clients_target"
+                                   name="next_week_new_clients_target" value="{{ report.next_week_new_clients_target }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_week_repeat_purchase_target">下周老客户复购金额目标</label>
+                            <input type="number" step="0.01" class="form-control" id="next_week_repeat_purchase_target"
+                                   name="next_week_repeat_purchase_target" value="{{ report.next_week_repeat_purchase_target }}" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <button type="submit" class="btn btn-primary btn-lg">保存修改</button>
+            <a href="{% url 'weekly_report_detail' report.report_id %}" class="btn btn-secondary btn-lg ml-2">取消</a>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'app01/js/jquery-3.6.0.min.js' %}"></script>
+<script>
+$(document).ready(function() {
+    // 设备销售明细
+    $("#add-equipment-detail").click(function() {
+        var newItem = `
+        <div class="equipment-detail-item mb-2">
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="equipment_details_key" placeholder="设备型号">
+                </div>
+                <div class="col-md-5">
+                    <input type="number" class="form-control" name="equipment_details_value" placeholder="销售数量">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-equipment-detail">删除</button>
+                </div>
+            </div>
+        </div>`;
+        $("#equipment-details-container").append(newItem);
+    });
+
+    $(document).on('click', '.remove-equipment-detail', function() {
+        $(this).closest('.equipment-detail-item').remove();
+    });
+
+    // 新客户明细
+    $("#add-new-client-detail").click(function() {
+        var newItem = `
+        <div class="new-client-detail-item mb-2">
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="new_clients_details_key" placeholder="客户名称">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="new_clients_details_value" placeholder="客户详情">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-new-client-detail">删除</button>
+                </div>
+            </div>
+        </div>`;
+        $("#new-clients-details-container").append(newItem);
+    });
+
+    $(document).on('click', '.remove-new-client-detail', function() {
+        $(this).closest('.new-client-detail-item').remove();
+    });
+
+    // 表单提交处理
+    $("#weeklyReportForm").submit(function(e) {
+        e.preventDefault();
+
+        // 收集JSON字段数据
+        var formData = $(this).serializeArray();
+        var processedData = {};
+
+        // 处理普通字段
+        $(this).find("input:not([name$='_key']):not([name$='_value']), textarea, select").each(function() {
+            if (this.name) {
+                processedData[this.name] = this.value;
+            }
+        });
+
+        // 处理JSON字段
+        processedData.equipment_details = collectJsonData('equipment_details_key', 'equipment_details_value');
+        processedData.new_clients_details = collectJsonData('new_clients_details_key', 'new_clients_details_value');
+
+        // 添加CSRF token
+        {#processedData['csrfmiddlewaretoken'] = $("input[name='csrfmiddlewaretoken']").val();#}
+
+        // 发送AJAX请求
+        $.ajax({
+            url: "{% url 'weekly_report_edit' report.pk %}",
+            type: "POST",
+            headers: {
+                "X-CSRFToken": $("input[name='csrfmiddlewaretoken']").val()
+            },
+            contentType: "application/json",
+            success: function(response) {
+                alert(response.message);
+                window.location.href = "{% url 'weekly_report_detail' report.pk %}";
+            },
+            error: function(xhr, status, error) {
+                alert("提交失败: " + xhr.responseText);
+            }
+        });
+    });
+
+    function collectJsonData(keyPrefix, valuePrefix) {
+        var result = {};
+        $("input[name='" + keyPrefix + "']").each(function(index) {
+            var key = $(this).val();
+            var value = $("input[name='" + valuePrefix + "']").eq(index).val();
+            if (key && value) {
+                result[key] = value;
+            }
+        });
+        return result;
+    }
+});
+</script>
+
+<style>
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    padding: 12px 20px;
+}
+.form-group {
+    margin-bottom: 1.5rem;
+}
+.form-control {
+    border-radius: 4px;
+}
+.btn {
+    border-radius: 4px;
+    padding: 8px 16px;
+}
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+.btn-danger {
+    background-color: #e74a3b;
+    border-color: #e74a3b;
+}
+</style>
+{% endblock %}

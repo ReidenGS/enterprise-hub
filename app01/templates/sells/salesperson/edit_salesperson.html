@@ -1,0 +1,217 @@
+{% extends "sells/base.html" %}
+{% load static %}
+
+{% block title %}编辑销售人员 - {{ salesperson.username }}{% endblock %}
+{% block page_title %}编辑销售人员{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">编辑销售人员信息</h5>
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-person-fill"></i> {{ salesperson.get_user_type_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row g-3">
+                        <!-- 用户名 -->
+                        <div class="col-md-6">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">
+                                {{ form.username.label }}
+                                {% if form.username.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.username.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">用于登录系统的唯一标识</small>
+                        </div>
+                        
+                        <!-- 姓名 -->
+                        <div class="col-md-6">
+                            <label for="{{ form.user_name.id_for_label }}" class="form-label">
+                                {{ form.user_name.label }}
+                                {% if form.user_name.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.user_name }}
+                            {% if form.user_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.user_name.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">销售人员的真实姓名</small>
+                        </div>
+                        
+                        <!-- 联系电话 -->
+                        <div class="col-md-6">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                {{ form.phone.label }}
+                            </label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.phone.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">格式：13800138000</small>
+                        </div>
+                        
+                        <!-- 邮箱 -->
+                        <div class="col-md-6">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                {{ form.email.label }}
+                                {% if form.email.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.email.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">用于接收系统通知</small>
+                        </div>
+                        
+                        <!-- 用户组 -->
+                        <div class="col-12">
+                            <label for="{{ form.groups.id_for_label }}" class="form-label">
+                                {{ form.groups.label }}
+                            </label>
+                            {{ form.groups }}
+                            {% if form.groups.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.groups.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">按住Ctrl键可多选</small>
+                        </div>
+                        
+                        <!-- 密码重置 -->
+                        <div class="col-12">
+                            <div class="card border-warning mb-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <i class="bi bi-shield-lock"></i> 密码管理
+                                </div>
+                                <div class="card-body">
+                                    <a href="{% url 'reset_salesperson_password' salesperson.pk %}" class="btn btn-outline-warning">
+                                        <i class="bi bi-key"></i> 重置密码
+                                    </a>
+                                    <small class="text-muted ms-2">重置后密码默认为八个8</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mt-4">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <a href="{% url 'salesperson_list' %}" class="btn btn-outline-secondary me-2">
+                                        <i class="bi bi-arrow-left"></i> 返回列表
+                                    </a>
+                                    <a href="{% url 'salesperson_detail' salesperson.id %}" class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i> 查看详情
+                                    </a>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save"></i> 保存更改
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 实时表单验证
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    
+    // 为所有必填字段添加标记
+    const requiredFields = form.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        const label = form.querySelector(`label[for="${field.id}"]`);
+        if (label) {
+            if (!label.querySelector('.required-star')) {
+                const star = document.createElement('span');
+                star.className = 'text-danger ms-1 required-star';
+                star.textContent = '*';
+                label.appendChild(star);
+            }
+        }
+    });
+    
+    // 表单提交验证
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // 邮箱格式验证
+        const emailField = form.querySelector('#id_email');
+        if (emailField && emailField.value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailField.value)) {
+                emailField.classList.add('is-invalid');
+                if (!document.querySelector('#email-error')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.id = 'email-error';
+                    errorDiv.className = 'invalid-feedback d-block';
+                    errorDiv.textContent = '请输入有效的邮箱地址';
+                    emailField.parentNode.appendChild(errorDiv);
+                }
+                isValid = false;
+            } else {
+                emailField.classList.remove('is-invalid');
+                const errorDiv = document.querySelector('#email-error');
+                if (errorDiv) errorDiv.remove();
+            }
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    });
+    
+    // 实时验证
+    form.querySelectorAll('input, select').forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

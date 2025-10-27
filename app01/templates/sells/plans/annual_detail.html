@@ -1,0 +1,215 @@
+{% extends 'sells/base.html' %}
+
+{% block title %}{{ plan.year }} 年度计划{% endblock %}
+{% block page_title %}{{ plan.year }} 年度销售计划详情{% endblock %}
+
+{% block content %}
+
+<style>
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .card-header {
+        background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+        border-bottom: none;
+        padding: 1.5rem;
+        color: white;
+    }
+    .progress {
+        border-radius: 10px;
+        height: 28px;
+        background-color: #f0f4f8;
+    }
+    .progress-bar {
+        border-radius: 10px;
+        background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        transition: width 0.6s ease;
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 1em;
+        border-radius: 50px;
+    }
+    .section-title {
+        border-left: 4px solid #3a7bd5;
+        padding-left: 10px;
+        margin: 20px 0 15px;
+        font-weight: 600;
+    }
+    .target-card {
+        border-left: 3px solid #00d2ff;
+        padding-left: 15px;
+    }
+    .equipment-badge {
+        font-size: 0.85rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- 基本信息卡片 -->
+    <div class="card">
+        <div class="card-header">
+            <h4><i class="fas fa-info-circle me-2"></i>计划基本信息</h4>
+            <a href="{% url 'download_annual_plan' pk=plan.pk %}"
+               class="btn btn-sm btn-outline-light"
+               style="border-radius: 20px;">
+                <i class="fas fa-file-download me-1"></i>下载该年度计划
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <dl class="row">
+                        <dt class="col-sm-5">计划年度:</dt>
+                        <dd class="col-sm-7 fw-bold">{{ plan.year }}</dd>
+
+                        <dt class="col-sm-5">总销售额目标:</dt>
+                        <dd class="col-sm-7">¥{{ plan.total_sales_target|floatformat:2 }}</dd>
+
+                        <dt class="col-sm-5">创建人:</dt>
+                        <dd class="col-sm-7">{{ plan.created_by.username }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-4">
+                    <dl class="row">
+                        <dt class="col-sm-5">创建时间:</dt>
+                        <dd class="col-sm-7">{{ plan.created_at|date:"Y-m-d H:i" }}</dd>
+
+                        <dt class="col-sm-5">新客户目标:</dt>
+                        <dd class="col-sm-7">{{ plan.new_clients_target }}家</dd>
+                    </dl>
+                </div>
+                <div class="col-md-4">
+                    <div class="progress-container">
+                        <label>年度完成进度</label>
+                        <div class="progress mt-2">
+                            <div class="progress-bar" role="progressbar" style="width: {{ plan.current_progress }}%;"
+                                aria-valuenow="{{ plan.current_progress }}" aria-valuemin="0" aria-valuemax="100">
+                                <span class="fw-bold">{{ plan.current_progress }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 产品目标卡片 -->
+    <div class="card">
+        <div class="card-header">
+            <h4><i class="fas fa-boxes me-2"></i>产品系列销售目标</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 target-card">
+                    <h5>SQZ系列</h5>
+                    <p class="fs-3">{{ plan.sqz_target }}<small class="text-muted fs-6"> 台</small></p>
+                </div>
+                <div class="col-md-3 target-card">
+                    <h5>QZ系列</h5>
+                    <p class="fs-3">{{ plan.qz_target }}<small class="text-muted fs-6"> 台</small></p>
+                </div>
+                <div class="col-md-3 target-card">
+                    <h5>OL连线系列</h5>
+                    <p class="fs-3">{{ plan.ol_target }}<small class="text-muted fs-6"> 台</small></p>
+                </div>
+                <div class="col-md-3 target-card">
+                    <h5>RO机器人系列</h5>
+                    <p class="fs-3">{{ plan.ro_target }}<small class="text-muted fs-6"> 台</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 季度目标卡片 -->
+    <div class="card">
+        <div class="card-header">
+            <h4><i class="fas fa-calendar-alt me-2"></i>季度销售目标分解</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 target-card">
+                    <h5>第一季度</h5>
+                    <p class="fs-4">¥{{ plan.q1_sales_target|floatformat:2 }}</p>
+                    <span class="badge bg-primary equipment-badge">{{ plan.q1_equipment_target }} 台设备</span>
+                    <span class="badge bg-success equipment-badge">{{ plan.q1_new_clients_target }} 家新客户</span>
+                </div>
+                <div class="col-md-3 target-card">
+                    <h5>第二季度</h5>
+                    <p class="fs-4">¥{{ plan.q2_sales_target|floatformat:2 }}</p>
+                    <span class="badge bg-primary equipment-badge">{{ plan.q2_equipment_target }} 台设备</span>
+                    <span class="badge bg-success equipment-badge">{{ plan.q2_new_clients_target }} 家新客户</span>
+                </div>
+                <div class="col-md-3 target-card">
+                    <h5>第三季度</h5>
+                    <p class="fs-4">¥{{ plan.q3_sales_target|floatformat:2 }}</p>
+                    <span class="badge bg-primary equipment-badge">{{ plan.q3_equipment_target }} 台设备</span>
+                    <span class="badge bg-success equipment-badge">{{ plan.q3_new_clients_target }} 家新客户</span>
+                </div>
+                <div class="col-md-3 target-card">
+                    <h5>第四季度</h5>
+                    <p class="fs-4">¥{{ plan.q4_sales_target|floatformat:2 }}</p>
+                    <span class="badge bg-primary equipment-badge">{{ plan.q4_equipment_target }} 台设备</span>
+                    <span class="badge bg-success equipment-badge">{{ plan.q4_new_clients_target }} 家新客户</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 战略分析卡片 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4><i class="fas fa-chart-line me-2"></i>市场分析</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="section-title">市场分析</h5>
+                    <p>{{ plan.market_analysis|default:"暂无内容"|linebreaks }}</p>
+
+                    <h5 class="section-title">竞争对手分析</h5>
+                    <p>{{ plan.competitor_analysis|default:"暂无内容"|linebreaks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4><i class="fas fa-chess me-2"></i>营销策略</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="section-title">产品策略</h5>
+                    <p>{{ plan.product_strategy|default:"暂无内容"|linebreaks }}</p>
+
+                    <h5 class="section-title">价格策略</h5>
+                    <p>{{ plan.pricing_strategy|default:"暂无内容"|linebreaks }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="d-flex justify-content-between mt-4">
+        <div>
+            <a href="{% url 'annual_plan_update' plan.pk %}" class="btn btn-primary me-2">
+                <i class="fas fa-edit me-1"></i> 编辑计划
+            </a>
+            <a href="{% url 'annual_plan_delete' plan.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash-alt me-1"></i> 删除计划
+            </a>
+        </div>
+        <div>
+            <a href="{% url 'annual_plan_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> 返回列表
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

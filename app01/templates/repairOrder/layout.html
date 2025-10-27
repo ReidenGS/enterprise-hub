@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'app01/plugins/bootstrap-3.4.1/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{%  static 'app01/plugins/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">
+    <!-- 添加Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% block css %}{% endblock %}
+    <style>
+        .navbar{
+            border-radius: 0;
+        }
+        .fried {
+            text-align: center;
+        }
+        .nav.navbar-nav li a:hover{
+            color: #2aabd2;
+        }
+        .serech{
+            margin-left: 20px;
+        }
+        .serech span:hover{
+            color: #2aabd2;
+        }
+        .hide{
+            display: none;
+        }
+        .input-daterange {
+            width: 100%;
+        }
+        .input-group-addon {
+            background-color: #fff;
+        }
+        .btn-default {
+            margin-left: 5px;
+        }
+
+
+    </style>
+</head>
+<body>
+<!-- 改造 -->
+<div class="container">
+    <!--导航条-->
+    <nav class="navbar navbar-default" style="margin-top: 20px">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" >报修订单信息管理</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <!--查询框-->
+                <ul class="nav navbar-nav">
+                    <li><a href="/c_info_list/?token={{ token }}">企业信息管理</a></li>
+                    <li><a href="/machine_info/?token={{ token }}">机器信息管理</a></li>
+                    <li><a href="/worker_info/?token={{ token }}" >工作人员信息管理</a></li>
+{#                    <li><a href="#" onclick="clickMe('#id_search')">编号查询</a></li>#}
+                    <li><a href="/repairOrder_info/?token={{ token }}" >报修订单信息管理</a></li>
+                    <li><a href="/advice_info/?token={{ token }}" >反馈建议信息管理</a></li>
+
+
+
+                </ul>
+
+
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+</div>
+<script src="{% static 'app01/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'app01/plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'app01/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js' %}"></script>
+<script src="{% static 'app01/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+
+{% block js %}{% endblock %}
+<script>
+    function clickMe(self){
+        $(self).siblings('.content').addClass('hide')
+        $(self).removeClass('hide')
+    }
+
+</script>
+
+</body>
+</html>

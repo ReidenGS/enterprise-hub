@@ -1,0 +1,122 @@
+{% extends 'sells/base.html' %}
+
+{% block title %}年度计划{% endblock %}
+{% block page_title %}年度销售计划列表{% endblock %}
+
+{% block content %}
+<style>
+    .plan-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: none;
+        transition: transform 0.3s ease;
+    }
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+        border-radius: 50px;
+        min-width: 80px;
+        display: inline-block;
+        text-align: center;
+    }
+    .empty-state {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 3rem;
+    }
+    .plan-year {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .target-amount {
+        font-weight: 500;
+        color: #3498db;
+    }
+    .product-badge {
+        font-size: 0.7rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- 头部操作区 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="bi bi-calendar-check me-2"></i>年度销售计划
+        </h4>
+        {% if request.user.user_type == 'admin' %}
+        <a href="{% url 'annual_plan_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> 创建计划
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- 计划列表 -->
+    {% if plans %}
+    <div class="row g-4">
+        {% for plan in plans %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card plan-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="plan-year mb-0">{{ plan.year }}年度计划</h5>
+                        <span class="status-badge bg-{% if plan.status == 'completed' %}success{% elif plan.status == 'in_progress' %}info{% else %}light text-dark{% endif %}">
+                            {{ plan.get_status_display }}
+                        </span>
+                    </div>
+
+                    <!-- 修改1：显示总销售目标 -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>总销售目标</span>
+                            <span class="target-amount">¥{{ plan.total_sales_target|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- 修改2：显示产品系列目标 -->
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">产品目标(台)</small>
+                        <div>
+                            <span class="badge bg-primary product-badge">SQZ: {{ plan.sqz_target }}</span>
+                            <span class="badge bg-success product-badge">QZ: {{ plan.qz_target }}</span>
+                            <span class="badge bg-info product-badge">OL: {{ plan.ol_target }}</span>
+                            <span class="badge bg-warning product-badge">RO: {{ plan.ro_target }}</span>
+                        </div>
+                    </div>
+
+                    <!-- 修改3：显示新客户开发目标 -->
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <span class="text-muted small">
+                            <i class="bi bi-people me-1"></i>新客户目标: {{ plan.new_clients_target }}家
+                        </span>
+                        <a href="{% url 'annual_plan_detail' plan.pk %}" class="btn btn-sm btn-outline-primary">
+                            详情 <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- 空状态 -->
+    <div class="card empty-state text-center">
+        <div class="card-body py-5">
+            <i class="bi bi-calendar-x text-muted display-5 mb-3"></i>
+            <h5 class="mb-2">暂无年度计划</h5>
+            <p class="text-muted mb-4">您还没有创建任何年度销售计划</p>
+            {% if request.user.user_type == 'admin' %}
+            <a href="{% url 'annual_plan_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> 创建计划
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
