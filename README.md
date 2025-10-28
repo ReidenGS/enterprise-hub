@@ -132,7 +132,7 @@ The data cleaning feature automatically processes employee attendance records fr
 
 * Download Cleaned FileOnce completed, the browser will automatically download the processed file, containing all results with highlighted anomalies (e.g., red-marked cells).清洗完成后，浏览器会自动下载处理后的文件，异常项会以红色高亮显示。
 
-🔗 [Demo of the data cleaning on Alibaba Cloud / 员工考情数据清洗阿里云演示链接](https://szjysk.xyz/attendance_info/)
+🔗 [Demo of the data cleaning on Alibaba Cloud / 员工考勤数据清洗阿里云演示链接](https://szjysk.xyz/attendance_info/)
 
 ---
 
