@@ -1,7 +1,7 @@
 # 🌐 Enterprise Hub / 企业中心平台
 
 A full-stack enterprise management system combining a **WeChat Mini Program for users** and a **Django-based admin web interface for managers**, powered by a **Django REST backend**.
-本项目是一个结合 **微信小程序（用户端）** 与 **Django 管理网页（管理员端）** 的企业管理平台，后端使用 **Django REST Framework** 实现接口与业务逻辑。系统集成了 **报修管理**、**销售计划与报表** 以及 **员工考勤数据清洗** 功能，用于作品展示与求职。
+本项目是一个结合 **微信小程序（用户端）** 与 **Django 管理网页（管理员端）** 的企业管理平台，后端使用 **Django REST Framework** 实现接口与业务逻辑。系统集成了 **报修管理**、**销售计划与报表** 以及 **员工考勤数据清洗** 功能。
 
 ---
 
