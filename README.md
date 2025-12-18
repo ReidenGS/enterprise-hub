@@ -144,7 +144,7 @@ This project is licensed under the **MIT License** — free to view and learn fr
 ## 👤 Author / 作者
 
 **Junkun Wen**
-📧 [email](mailto:jw9697@nyu.edu)
+📧 [jw9697@stern.nyu.edu](mailto:jw9697@stern.nyu.edu)
 🌐 [GitHub Profile](https://github.com/ReidenGS)
 
 ---
